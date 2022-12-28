@@ -64,7 +64,7 @@
                 "name": "Atul",
                 "role": "developer",
                 "email": "atul@example.com",
-                "phone": 0,
+                "phone": 4084872632,
                 "contacted": true
             }
 
