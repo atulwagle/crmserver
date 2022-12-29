@@ -218,3 +218,14 @@
     ```
 
     ## This program creates logs.txt that records the api calls and logs the customer id. It gets created in the current directory.
+
+    ## References:
+
+    * Go References: 
+        * [Introduction to Programming in GO](https://www.golang-book.com/books/intro)
+        * [Adding logs](https://www.honeybadger.io/blog/golang-logging/)
+        * [Go Tour](https://go.dev/tour/list)
+        * [Serving Static Sites](https://www.alexedwards.net/blog/serving-static-sites-with-go)
+        * [Struts and JSON](https://drstearns.github.io/tutorials/gojson/)
+    * Create Markdown:
+        * [Markdown Live Preview](https://markdownlivepreview.com/)
