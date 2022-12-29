@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -24,6 +26,11 @@ type ErrorResponse struct {
 	Errormessage string `json:"errormessage"`
 }
 
+var (
+	InfoLogger  *log.Logger
+	ErrorLogger *log.Logger
+)
+
 var uuid_1, error1 = uuid.Parse("f3f1cc7d-1f32-4652-b016-52dc3ac5bf50")
 var uuid_2, error2 = uuid.Parse("2f7a9959-084a-41d7-a85f-5430cbf6d90a")
 var uuid_3, error3 = uuid.Parse("2532aacc-a5ae-4540-a22c-d04d889f142e")
@@ -37,6 +44,7 @@ var customerDb = []Customer{customer1, customer2, customer3}
 func getCustomers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	InfoLogger.Println("GetCustomers: Records successfully retrieved.")
 	json.NewEncoder(w).Encode(customerDb)
 }
 
@@ -49,6 +57,7 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 	var customerid = params["id"]
 	if len(strings.TrimSpace(customerid)) == 0 {
 		senderrormessage(w, "Invalid customer id.", http.StatusBadRequest)
+		ErrorLogger.Println("GetCustomer: Invalid customer id.")
 	} else {
 		var found bool
 		for i := 0; i < len(customerDb); i++ {
@@ -62,11 +71,13 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(tempCustomer)
 				found = true
+				InfoLogger.Println("GetCustomer: Record found. Customerid:", customerid)
 				break
 			}
 		}
 		if !found {
 			senderrormessage(w, "Record not found.", http.StatusNotFound)
+			ErrorLogger.Println("GetCustomer: Record not found. Customerid:", customerid)
 		}
 	}
 }
@@ -78,6 +89,7 @@ func deleteCustomer(w http.ResponseWriter, r *http.Request) {
 	var customerid = params["id"]
 	if len(strings.TrimSpace(customerid)) == 0 {
 		senderrormessage(w, "Invalid customer id.", http.StatusBadRequest)
+		ErrorLogger.Println("DeleteCustomer: Invalid customer id.")
 	} else {
 		var found bool
 		for i := 0; i < len(customerDb); i++ {
@@ -86,11 +98,13 @@ func deleteCustomer(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(customerDb)
 				found = true
+				InfoLogger.Println("DeleteCustomer: Record successfully deleted. Customerid:", customerid)
 				break
 			}
 		}
 		if !found {
 			senderrormessage(w, "Record not found.", http.StatusNotFound)
+			ErrorLogger.Println("DeleteCustomer: Record not found. Customerid:", customerid)
 		}
 	}
 }
@@ -120,13 +134,13 @@ func addCustomer(w http.ResponseWriter, r *http.Request) {
 	// Read the HTTP request body
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("AddCustomer: Error during reading the request body: %v\n", err)
+		ErrorLogger.Printf("AddCustomer: Error during reading the request body: %v\n", err)
 	}
 
 	// Encode the request body into a Golang value so that we can work with the data
 	err = json.Unmarshal(reqBody, &newCustomerEntry)
 	if err != nil {
-		fmt.Printf("AddCustomer: Error during unmarshalling: %v\n", err)
+		ErrorLogger.Printf("AddCustomer: Error during unmarshalling: %v\n", err)
 	}
 
 	var found bool
@@ -139,6 +153,7 @@ func addCustomer(w http.ResponseWriter, r *http.Request) {
 			found = true
 
 			senderrormessage(w, "Record already present.", http.StatusNotFound)
+			ErrorLogger.Println("AddCustomer: Record already present. Customer Name:", newCustomerEntry.Name)
 
 			break
 		}
@@ -147,6 +162,8 @@ func addCustomer(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		customerDb = append(customerDb, newCustomerEntry)
 		w.WriteHeader(http.StatusCreated)
+		InfoLogger.Println("AddCustomer: Record successfully added. Customer id:", newCustomerEntry.Id)
+
 		// Regardless of successful resource creation or not, return the newly added customer record
 		json.NewEncoder(w).Encode(newCustomerEntry)
 	}
@@ -162,17 +179,18 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	var customerid = params["id"]
 	if len(strings.TrimSpace(customerid)) == 0 {
 		senderrormessage(w, "Invalid customer id.", http.StatusBadRequest)
+		ErrorLogger.Println("UpdateCustomer: Invalid customer id.")
 	} else {
 		// Read the HTTP request body
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			fmt.Printf("UpdateCustomer: Error during reading the request body: %v\n", err)
+			ErrorLogger.Printf("UpdateCustomer: Error during reading the request body: %v\n", err)
 		}
 
 		// Encode the request body into a Golang value so that we can work with the data
 		err = json.Unmarshal(reqBody, &updCustomerEntry)
 		if err != nil {
-			fmt.Printf("UpdateCustomer: Error during unmarshalling: %v\n", err)
+			ErrorLogger.Printf("UpdateCustomer: Error during unmarshalling: %v\n", err)
 		}
 
 		var found bool
@@ -186,12 +204,14 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 				found = true
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(customerDb[i])
+				InfoLogger.Println("UpdateCustomer: Record updated successfully. CustomerId: ", customerid)
 				break
 			}
 		}
 
 		if !found {
 			senderrormessage(w, "Record not found.", http.StatusNotFound)
+			ErrorLogger.Println("UpdateCustomer: Record could not updated. Record not found. CustomerId: ", customerid)
 		}
 	}
 }
@@ -210,13 +230,13 @@ func updateCustomers(w http.ResponseWriter, r *http.Request) {
 	// Read the HTTP request body
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("UpdateCustomers: Error during reading the request body: %v\n", err)
+		ErrorLogger.Printf("UpdateCustomers: Error during reading the request body: %v\n", err)
 	}
 
 	// Encode the request body into a Golang value so that we can work with the data
 	err = json.Unmarshal(reqBody, &updCustomerEntries)
 	if err != nil {
-		fmt.Printf("UpdateCustomers: Error during unmarshalling: %v\n", err)
+		ErrorLogger.Printf("UpdateCustomers: Error during unmarshalling: %v\n", err)
 	}
 
 	var updCustomerEntriesResponse []UpdCustomersResponse = make([]UpdCustomersResponse, len(updCustomerEntries))
@@ -234,19 +254,21 @@ func updateCustomers(w http.ResponseWriter, r *http.Request) {
 
 				updCustomerEntriesResponse[j].Customerentry = updCustomerEntries[j]
 				updCustomerEntriesResponse[j].Statuscode = http.StatusOK
+				InfoLogger.Println("UpdateCustomers: Record successfully updated. CustomerId:", updCustomerEntries[j].Id)
 				break
 			}
 		}
 		if !found {
 			updCustomerEntriesResponse[j].Customerentry = updCustomerEntries[j]
 			updCustomerEntriesResponse[j].Statuscode = http.StatusNotFound
+			ErrorLogger.Println("UpdateCustomers: Record could not be updated. CustomerId:", updCustomerEntries[j].Id)
 		}
 	}
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(updCustomerEntriesResponse)
 	if err != nil {
-		fmt.Printf("UpdateCustomers: Error during unmarshalling: %v\n", err)
+		ErrorLogger.Printf("UpdateCustomers: Error during unmarshalling: %v\n", err)
 	}
 }
 
@@ -255,6 +277,16 @@ func senderrormessage(w http.ResponseWriter, message string, errorcode int) {
 	errormsg.Errormessage = message
 	w.WriteHeader(errorcode)
 	json.NewEncoder(w).Encode(errormsg)
+}
+
+func init() {
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func main() {
@@ -270,6 +302,7 @@ func main() {
 	router.HandleFunc("/customers/{id}", deleteCustomer).Methods("DELETE")
 
 	fmt.Println("Server is starting on port 3000...")
+	InfoLogger.Println("Server is starting on port 3000...")
 
 	http.ListenAndServe(":3000", router)
 }

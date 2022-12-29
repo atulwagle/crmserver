@@ -1,0 +1,9 @@
+INFO: 2022/12/28 20:43:12 crmserver.go:305: Server is starting on port 3000...
+INFO: 2022/12/28 20:43:26 crmserver.go:165: AddCustomer: Record successfully added. Customer id: eea00635-571b-4d0f-aabf-2db48e908dec
+INFO: 2022/12/28 20:43:44 crmserver.go:74: GetCustomer: Record found. Customerid: eea00635-571b-4d0f-aabf-2db48e908dec
+INFO: 2022/12/28 20:44:00 crmserver.go:47: GetCustomers: Records successfully retrieved.
+ERROR: 2022/12/28 20:44:11 crmserver.go:214: UpdateCustomer: Record could not updated. Record not found. CustomerId:  137c5121-7aff-4ae5-9dd6-da4f562c9a216
+INFO: 2022/12/28 20:44:24 crmserver.go:207: UpdateCustomer: Record updated successfully. CustomerId:  eea00635-571b-4d0f-aabf-2db48e908dec
+INFO: 2022/12/28 20:44:41 crmserver.go:257: UpdateCustomers: Record successfully updated. CustomerId: f3f1cc7d-1f32-4652-b016-52dc3ac5bf50
+INFO: 2022/12/28 20:44:41 crmserver.go:257: UpdateCustomers: Record successfully updated. CustomerId: 2f7a9959-084a-41d7-a85f-5430cbf6d90a
+INFO: 2022/12/28 20:45:06 crmserver.go:101: DeleteCustomer: Record successfully deleted. Customerid: eea00635-571b-4d0f-aabf-2db48e908dec
