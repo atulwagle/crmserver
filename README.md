@@ -216,3 +216,5 @@
 
             If we try to delete the same resource once again or try to delete using an invalid id, then the API returns 404 and Record not found.
     ```
+
+    ## This program creates logs.txt that records the api calls and logs the customer id. It gets created in the current directory.
